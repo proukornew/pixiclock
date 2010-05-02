@@ -1,0 +1,971 @@
+#!/usr/bin/python
+
+#
+# Copyright (c) 2010 Alexey Michurin <a.michurin@gmail.com>,
+#                    Mihail Razuvaev (goglus) <goglus@gmail.com>
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+#
+
+##################################### GENERIC SKIN
+
+SKIN = {
+
+'border': 3,          # Border width
+
+'bgcolor': '#444444', # Backgtound
+
+'fgcolor': '#cccccc', # Foreground
+
+'scale': 2,           # Scaling factor
+
+'digits': (
+
+'''
+.OOOOO.
+O.....O
+O...O.O
+O..O..O
+O.O...O
+O.....O
+.OOOOO.
+
+''','''
+.O...O.
+.OOOOO.
+O..O..O
+.OOOOO.
+.OO.OO.
+.OOOOO.
+OO.O.OO
+
+''','''
+
+..OO...
+...O...
+...O...
+...O...
+...O...
+...O...
+.OOOOO.
+
+''','''
+OO...OO
+OOOOOOO
+O..O..O
+OOOOOOO
+O..O..O
+..OOO..
+OOOOOOO
+
+''','''
+
+.OOOOO.
+O.....O
+......O
+......O
+.OOOOO.
+O......
+OOOOOOO
+
+''','''
+..O.O..
+...O...
+.OOOOO.
+OO.O.OO
+OOOOOOO
+.OO.OO.
+..O.O..
+
+''','''
+
+.OOOOO.
+O.....O
+......O
+...OOO.
+......O
+O.....O
+.OOOOO.
+
+''','''
+.OOOOO.
+O.OOO.O
+.OO.OO.
+...O...
+O.OOO.O
+.OO.OO.
+O.OOO.O
+
+''','''
+
+....OOO
+...O..O
+..O...O
+.O....O
+OOOOOOO
+......O
+......O
+
+''','''
+.O...O.
+..OOO..
+O.O.O.O
+OOOOOOO
+..OOO..
+OOOOOOO
+O.....O
+
+''','''
+
+OOOOOOO
+O......
+OOOOOO.
+O.....O
+......O
+O.....O
+.OOOOO.
+
+''','''
+
+OOO.OOO
+..O.O..
+..OOO..
+.O.O.O.
+..O.O..
+..O.O..
+...O...
+
+''','''
+
+.OOOOO.
+O......
+OOOOOO.
+O.....O
+O.....O
+O.....O
+.OOOOO.
+
+''','''
+...O...
+.OO.OO.
+O.O.O.O
+OOOOOOO
+O..O..O
+OO.O.OO
+.OO.OO.
+
+''','''
+
+OOOOOOO
+......O
+.....O.
+....O..
+...O...
+...O...
+..OOO..
+
+''','''
+.O...O.
+.OOOOO.
+O.OOO.O
+.OOOOO.
+..OOO..
+..O.O..
+...O...
+
+''','''
+
+.OOOOO.
+O.....O
+O.....O
+.OOOOO.
+O.....O
+O.....O
+.OOOOO.
+
+''','''
+.OOOO..
+O.O.O..
+OOOOO.O
+...OOOO
+OOOOO..
+.OOOO..
+..O.O..
+
+''','''
+
+.OOOOO.
+O.....O
+O.....O
+O.....O
+.OOOOOO
+......O
+.OOOOO.
+
+''','''
+OOOOOOO
+O.OOO.O
+OOO.OOO
+.O...O.
+.OOOOO.
+..O.O..
+.OO.OO.
+
+''','''
+
+..
+OO
+OO
+..
+OO
+OO
+..
+'''
+)}
+
+#####################################
+# /SETUP SECTIONS
+
+
+VERSION = '0.4.0'
+
+
+import time
+import socket
+import re
+import getopt
+import sys
+import os
+import signal
+import fcntl
+from ConfigParser import ConfigParser
+from Tkinter import Tk, Label, BitmapImage, Menu, Toplevel, Button, Frame, \
+                    LEFT, GROOVE, READABLE, EXCEPTION, NORMAL, DISABLED, \
+                    StringVar
+
+
+################ CONSTANTS #########################
+
+
+ABOUT = (  'PixiClock ' + VERSION + '\n'
+           '\n'
+           'Released under the terms of BSD license.\n'
+           '\n'
+           'Copyright (c) 2010\n'
+           '   Hacked by Alexey Michurin <a.michurin@gmail.com>\n'
+           '   Graphic design by Mihail Razuvaev (goglus) <goglus@gmail.com>\n'
+           '\n'
+           'PixiClock is tiny desktop clock widget for true geeks.\n'
+           '\n'
+           'Project homepage:\n'
+           '   http://pixiclock.googlecode.com/\n'
+           'More about pixi-culture:\n'
+           '   http://goglus.com/\n'
+           '   http://goglus.com/pixel/urod.htm'
+        )
+
+
+HELP =  (  'Command line options.\n'
+           '\n'
+           '-v\n'
+           '    print version\n'
+           '-h\n'
+           '    print help message\n'
+           '-p PORT\n'
+           '    run pixiclock in network mode on PORT; try\n'
+           '    $ pixiclock-clietn -p PORT "TEST"\n'
+           '-n\n'
+           '    same as -p 7070\n'
+           '-a HH:MM\n'
+           '    set up alarm; can be used many times\n'
+           '-a HH:MM@/path/command\n'
+           '    set up alarm and command to execute on it\n'
+           '    (there is no way to pass arguments to command yet)'
+           '-f FILE\n'
+           '    load skin from configuration file;\n'
+           '    can be used many times to load diferent\n'
+           '    skins in conjunction\n'
+           '-c COMMAND\n'
+           '    piped watchdog command\n'
+           '-w\n'
+           '    do not ignore window manager\n'
+           '-d\n'
+           '    daemonize'
+        )
+
+
+################ NETWORK FUNCTIONALITY #############
+# commands
+# BG=#000000
+# FG=#000000
+# GEOMETRY=-10-10
+# DELAY=1000
+
+
+def open_socket(port):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setblocking(0)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,
+           sock.getsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR) | 1)
+    sock.bind(('127.0.0.1', port))
+    sock.listen(100)
+    set_close_on_exec(sock)
+    return sock
+
+def set_close_on_exec(sock):
+    # the subprocess shouldn't have the listening socket open and other
+    fd = sock.fileno()
+    flags = fcntl.fcntl(fd, fcntl.F_GETFD)
+    flags |= fcntl.FD_CLOEXEC
+    fcntl.fcntl(fd, fcntl.F_SETFD, flags)
+
+
+class channel:
+
+    def __init__(o, w, sock):
+        o.window = w
+        o.buffer = ''
+        o.window.tk.createfilehandler(sock, READABLE | EXCEPTION , o)
+        o.window.connections.append(sock)
+
+    def __call__(o, s, m):
+        if (m & EXCEPTION) == 0:
+            d = s.recv(4096)
+        else:
+            d = ''
+        if d == '':
+            o.window.tk.deletefilehandler(s)
+            o.window.connections.remove(s)
+            s.close()
+            o.window.accept_data(o.buffer)
+        else:
+            o.buffer += d
+
+
+class io_proxy:
+
+    def __init__(o, r, fd):
+        o.root = r
+        o.window = r.window
+        o.fd = fd
+        o.td = None
+        o.buffer = ''
+        o.window.tk.createfilehandler(fd, READABLE | EXCEPTION, o)
+
+    def __call__(o, s, m):
+        if (m & EXCEPTION) == 0:
+            # Note: since you don't know how many bytes are available
+            # for reading, you can't use the Python file object's read
+            # or readline methods, since these will insist on reading
+            # a predefined number of bytes.
+            d = os.read(s, 4096)
+        else:
+            d = ''
+        if len(d) == 0:
+            o.root.revival()
+            return
+        o.buffer += d
+        # replan data emition
+        # we emit data if subprocess keep silence during 1/2 second
+        if not o.td is None:
+            o.window.after_cancel(o.td)
+        o.td = o.window.after(500, o.emit_data)
+
+    def emit_data(o):
+        o.window.accept_data(o.buffer)
+        o.buffer = ''
+        o.td = None
+
+    def close(o):
+        os.close(o.fd)
+        o.window.tk.deletefilehandler(o.fd)
+
+
+class proc_manager:
+
+    def __init__(o, w, proc):
+        o.window = w # used by io_proxy
+        o.process = proc
+        o.pid = None
+        o.stdout = None
+        o.up()
+
+    def up(o):
+        r, w = os.pipe()
+        pid = os.fork()
+        if pid:  # this is the parent process
+            os.close(w)
+            o.pid = pid
+            o.stdout = io_proxy(o, r)
+            # we can proxy stderr in the same way
+            # who need?
+        else:    # in the child
+            os.close(r)
+            os.dup2(w, 1) # stdout
+            # the subprocess shouldn't have the listening
+            # socket open and other, but we care about it before
+            # see set_close_on_exec()
+            os.execv(o.process, ())
+
+    def die(o):
+        o.stdout.close()
+        try:
+            os.kill(o.pid, signal.SIGKILL)
+        except OSError:
+            pass
+
+    def revival(o):
+        o.die()
+        o.window.accept_data('BG=#FF0000\n'
+                             'FG=#FFFF00\n'
+                             'DELAY=10000\n'
+                             'INTERNAL ERROR:\n'
+                             'Process\n' + o.process + '\ndies.\n'
+                             'Will be revival in a minute.')
+        o.window.after(60000, o.up)
+
+
+class net_message(Toplevel):
+
+    def __init__(o, r, sock, subprocs):
+        Toplevel.__init__(o, r)
+        o.withdraw()
+        o.overrideredirect(True)
+        o.title('pixiclock message')
+        o.label = Label(o,
+                        bg='#444444',
+                        fg='#cccccc',
+                        justify=LEFT,
+                        font=('Helvetica', 10))
+        o.label.pack()
+        o.sock = sock      # used by proc_manager...
+        o.connections = [] # and channel
+        if sock:
+            o.tk.createfilehandler(sock, READABLE, o.accept_connection)
+        o.subprocs = []
+        for proc in subprocs:
+            o.subprocs.append(proc_manager(o, proc))
+        o.prog_handler = None
+        o.prog = []
+        o.prog_re = re.compile('(BG|FG|GEOMETRY|DELAY|PROLONGATE)'
+                               '\s*[=:]\s*'
+                               '([-+#a-zA-Z0-9]+);?')
+
+    def accept_connection(o, s, m):
+        sock, addr = s.accept()
+        set_close_on_exec(sock)
+        channel(o, sock)
+
+    def accept_data(o, data):
+        pos = 0
+        prog = []
+        mess = ''
+        pre_defaults = {'GEOMETRY': '-10-10',
+                        'BG': '#444444',
+                        'FG': '#cccccc'}
+        delay_found = False
+        while True:
+            m = o.prog_re.search(data, pos)
+            if m is None:
+                mess += data[pos:]
+                break
+            c = m.group(1)
+            p = m.group(2)
+            delay_found = delay_found or c == 'DELAY'
+            if not delay_found:
+                try:
+                    del pre_defaults[c]
+                except KeyError:
+                    pass
+            prog.append((c, p))
+            mess += data[pos:m.start()]
+            pos = m.end()
+        o.prog.extend([('TEXT', mess.strip())] +
+                      pre_defaults.items() +
+                      prog)
+        if not delay_found:
+            o.prog.append(('DELAY', 5000))
+        # start program
+        if o.prog_handler is None:
+            # we will show window later, on first DELAY
+            o.exec_prog_step()
+
+    def exec_prog_step(o):
+        try:
+            while True:
+                if len(o.prog) == 0:
+                    o.withdraw()
+                    o.prog_handler = None
+                    return
+                c, p = o.prog[0]
+                o.prog = o.prog[1:]
+                if c == 'BG':
+                    o.label.config(bg=p)
+                elif c == 'FG':
+                    o.label.config(fg=p)
+                elif c == 'GEOMETRY':
+                    o.geometry(p)
+                elif c == 'DELAY':
+                    if o.prog_handler is None:
+                        o.deiconify()
+                        o.lift()
+                    o.prog_handler = o.after(int(p), o.exec_prog_step)
+                    break
+                elif c == 'TEXT':
+                    o.label.config(text=p)
+                else:
+                    raise Exception('Command %s?', c)
+        except Exception, e:
+            err = 'ERROR %s=%s: %s' % (c, p, str(e))
+            print err
+            o.prog = [('TEXT', str(err)),
+                      ('GEOMETRY', '-10-100'),
+                      ('BG', '#990000'),
+                      ('FG', '#ffffff'),
+                      ('DELAY', 10000)]
+            o.prog_handler = o.after(0, o.exec_prog_step)
+
+    def vanish_connections(o):
+        o.sock.close()
+        for c in o.connections:
+            c.close()
+
+    def vanish_subprocs(o):
+        for p in o.subprocs:
+            p.die()
+
+################ BASE FUCTIONALITY #################
+
+
+def pix2xbm(data, factor):
+    xbm = []
+    w = 0
+    h = 0
+    for l in data.strip().split():
+        for p in range(factor):
+            if w == 0:
+                w = len(l)*factor
+            h += 1
+            m = 1
+            n = True
+            for c in l:
+                for q in range(factor):
+                    if n:
+                        xbm.append(0)
+                        n = False
+                    if c == 'O':
+                        xbm[-1] |= m
+                    m *= 2
+                    if m == 256:
+                        m = 1
+                        n = True
+    return ('#define x_width %d\n'
+            '#define x_height %d\n'
+            'static unsigned char x_bits[] = {\n'
+            '%s};\n'
+           ) % (w, h, ', '.join(map(lambda x: '0x%02x' % x, xbm)))
+
+
+class dialog(Toplevel):
+
+    def __init__(o, r, u, t):
+        Toplevel.__init__(o, r)
+        o.title(u)
+        k = Frame(o, borderwidth=0)
+        k.pack(padx=3, pady=3)
+        f = Frame(k, borderwidth=4, relief=GROOVE)
+        f.pack(padx=1, pady=1)
+        Label(f, text=t, justify=LEFT, borderwidth=4).pack()
+        Button(k, text='Close', command=o.destroy, pady=0).pack(padx=1, pady=1)
+
+
+class popup_menu(Menu):
+
+    def __init__(o, r):
+        Menu.__init__(o, r, tearoff=0, font=('Helvetica', 8, 'bold'))
+        o.root = r
+        o.skin_menu = Menu(o, tearoff=0, font=('Helvetica', 8, 'bold'))
+        items = r.skins.get_names()
+        s = DISABLED
+        if len(items) > 1:
+            s = NORMAL
+            o.skin = StringVar(o, r.skins.get_name())
+            for m in items:
+                o.skin_menu.add_radiobutton(
+                    label=m,
+                    command=o.update_skin,
+                    variable=o.skin,
+                    value=m)
+        o.add_cascade(label='Skins', menu=o.skin_menu, state=s)
+        o.add_command(label='Alarms', command=o.alarms_dialog)
+        o.add_command(label='About', command=o.about_dialog)
+        o.add_command(label='Help', command=o.help_dialog)
+        o.add_command(label='Exit', command=r.quit)
+
+    def about_dialog(o):
+        dialog(o.root, 'About', ABOUT)
+
+    def help_dialog(o):
+        dialog(o.root, 'Help', HELP)
+
+    def alarms_dialog(o):
+        if o.root.alarms:
+            a = 'List of alarms:\n\n' + '\n'.join(
+                   map(
+                     lambda x: x[0] + '\t' + (x[1] or '-'),
+                     sorted(o.root.alarms.items(), key=lambda x: x[0])
+                   )
+                )
+        else:
+            a = 'Alarms not set.\n\nUse option -a HH:MM\nto set up alarms.'
+        dialog(o.root, 'Alarms', a)
+
+    def update_skin(o):
+        o.root.skins.set_name(o.skin.get())
+        o.root.load_skin()
+        o.root.update_digits()
+
+
+class window(Tk):
+
+    def __init__(o, alarms, skins, ignore_wm):
+        Tk.__init__(o)
+        if ignore_wm:
+            o.overrideredirect(True)
+            o.bind('<1>', o.start_motion)
+            o.bind('<B1-Motion>', o.continue_motion)
+        o.title('pixiclock')
+        o.labels = []
+        for n in range(8):
+            l = Label(o)
+            o.labels.append(l)
+            l.grid(column=n, row=0)
+        o.alarms = alarms # used by o.popup
+        o.alarm_mode = 0
+        o.alarm_x = None
+        o.alarm_y = None
+        o.alarm_done = ''
+        o.skins = skins # used by o.popup
+        o.popup = popup_menu(o)
+        o.load_skin()
+        o.digital_mode = False
+        o.bind('<3>', o.popup_menu)
+        o.bind('<Enter>', o.mouse_enter)
+        o.timer_loop()
+
+    def popup_menu(o, e):
+        o.popup.tk_popup(e.x_root, e.y_root, 0)
+
+    def start_motion(o, e):
+        o.lift()
+        o.start_motion_x = e.x_root - o.winfo_x()
+        o.start_motion_y = e.y_root - o.winfo_y()
+
+    def continue_motion(o, e):
+        x = e.x_root - o.start_motion_x
+        y = e.y_root - o.start_motion_y
+        if -10 < x < 10:
+            x = 0
+        d = o.winfo_screenwidth() - o.winfo_width()
+        if -10 < x - d < 10:
+            x = d
+        if -10 < y < 10:
+            y = 0
+        d = o.winfo_screenheight() - o.winfo_height()
+        if -10 < y - d < 10:
+            y = d
+        o.geometry('+%d+%d' % (x, y))
+
+    def mouse_enter(o, e):
+        if not o.digital_mode:
+            o.lift()
+            o.digital_mode = True
+            o.update_digits()
+            o.after(2000, o.undigital_mode)
+
+    def undigital_mode(o):
+        o.digital_mode = False
+        o.update_digits()
+
+    def load_skin(o):
+        skin = o.skins.get()
+        o.digits = []
+        # load and save bitmaps; Tk does not save it in parent objects
+        for n in range(21):
+            d = pix2xbm(skin['digits'][n], skin['scale'])
+            o.digits.append(BitmapImage(data=d,
+                                        foreground=skin['fgcolor'],
+                                        background=skin['bgcolor']))
+        # assign images to labels; we must do it before any
+        # other set up operations and labels reconfiguration
+        # cose we lost old images now
+        for n, l in enumerate(o.labels):
+            p = 0
+            if (n+1)%3 == 0:
+                p = 20
+            l.configure(image=o.digits[p])
+        # configure labels
+        for l in o.labels:
+            l.configure(borderwidth=skin['border'],
+                        background=skin['bgcolor'])
+
+    def update_digits(o):
+        hms = time.localtime()[3:6]
+        hm = '%02d:%02d' % tuple(hms[:2])
+        if hm in o.alarms and hm != o.alarm_done:
+            cmd = o.alarms[hm]
+            o.alarm_done = hm
+            if cmd is None:
+                o.start_alarm()
+            else:
+                print cmd
+                try:
+                    pid = os.fork()
+                    if pid <= 0:
+                        os.execv(cmd, ())
+                except OSError, e:
+                    sys.stderr.write('fork #1 failed: %d (%s)' % (e.errno, e.strerror))
+                    sys.exit(1)
+        d = 1
+        if o.digital_mode:
+            d = 0
+        for n, v in enumerate(hms):
+            o.labels[n*3].configure(image=o.digits[(v/10)*2 + d])
+            o.labels[n*3+1].configure(image=o.digits[(v%10)*2 + d])
+
+    def timer_loop(o):
+        o.update_digits()
+        o.after(1000, o.timer_loop)
+
+    def start_alarm(o):
+        if o.alarm_mode:
+            return
+        o.alarm_mode = 1
+        o.alarm_x = o.winfo_x()
+        o.alarm_y = o.winfo_y()
+        o.continue_alarm()
+
+    def continue_alarm(o):
+        o.alarm_mode += 1
+        if o.alarm_mode > 50:
+            o.alarm_mode = 0
+            o.geometry('+%d+%d' % (o.alarm_x, o.alarm_y))
+        else:
+            o.lift()
+            dx, dy = 5*(1-2*(o.alarm_mode%2)), 0
+            if (o.alarm_mode/10)%2 == 0:
+               dx, dy = dy, dx
+            o.geometry('+%d+%d' % (
+                  (o.winfo_screenwidth() - o.winfo_width())/2 + dx,
+                  (o.winfo_screenheight() - o.winfo_height())/2 + dy)
+            )
+            o.after(100, o.continue_alarm)
+
+
+class odict: # not complete but sufficient implementation of ordered dictionary
+
+    def __init__(o):
+        o.dt = {}
+        o.ks = []
+
+    def __iter__(o):
+        for i in o.ks:
+            yield i, o.dt[i]
+
+    def __setitem__(o, k, v):
+        if not k in o.ks:
+            o.ks.append(k)
+        o.dt[k] = v
+
+    def __getitem__(o, k):
+        return o.dt[k]
+
+    def keys(o):
+        return o.ks[:]
+
+
+class skin_base:
+
+    def __init__(o, files):
+        o.def_skin = None
+        o.skins_base = {'generic': SKIN}
+        o.names = [] # in order as in config
+        for file in files:
+            conf = ConfigParser()
+            # experimental hack
+            conf._sections = odict()
+            conf._dict = odict # python 2.6
+            # /hack
+            conf.read(file)
+            sections = conf.sections()
+            if len(sections) == 0:
+                raise Exception('There are no sections found '
+                                'in configuration file %s' % file)
+            for sect in conf.sections():
+                skin = {}
+                for k, t in (('border', int),
+                             ('bgcolor', str),
+                             ('fgcolor', str),
+                             ('scale', int)):
+                    skin[k] = t(conf.get(sect, k))
+                a = []
+                for i in range(10):
+                    a.append(conf.get(sect, 'digit%d' % i))
+                    a.append(conf.get(sect, 'icon%d' % i))
+                a.append(conf.get(sect, 'separator'))
+                skin['digits'] = a
+                name = sect
+                fix = 0
+                while name in o.skins_base:
+                    fix += 1
+                    name = '%s (%d)' % (sect, fix)
+                if o.def_skin is None:
+                    o.def_skin = name
+                o.skins_base[name] = skin
+                o.names.append(name)
+        if o.def_skin is None:
+            o.def_skin = 'generic'
+        o.names.append('generic')
+
+    def get(o):
+        return o.skins_base[o.def_skin]
+
+    def get_name(o):
+        return o.def_skin
+
+    def get_names(o):
+        return o.names
+
+    def set_name(o, s):
+        o.def_skin = s
+
+
+def daemonize():
+        # base on "Advanced Programming in the UNIX Environment"
+        # do first fork
+        try:
+            pid = os.fork()
+            if pid > 0:
+                sys.exit(0)
+        except OSError, e:
+            sys.stderr.write('fork #1 failed: %d (%s)' % (e.errno, e.strerror))
+            sys.exit(1)
+        # decouple from parent environment
+        os.chdir('/')   # prevent unmounting
+        os.setsid()
+        os.umask(022)
+        # do second fork
+        try:
+            pid = os.fork()
+            if pid > 0:
+                sys.exit(0)
+        except OSError, e:
+            sys.stderr.write('fork #2 failed: %d (%s)' % (e.errno, e.strerror))
+            sys.exit(1)
+
+
+def main():
+    # parse arguments
+    try:
+        show_version = False
+        show_help = False
+        net_port = -1
+        alarms = {}
+        skin_files = []
+        ignore_wm = True
+        daemonize_app = False
+        sock = None
+        subprocs = []
+        opts, args = getopt.getopt(sys.argv[1:], 'ndwvhp:a:f:c:')
+        for o, v in opts:
+            if o == '-p':
+                if sock is None:
+                    sock = open_socket(int(v))
+            elif o == '-n':
+                if sock is None:
+                    sock = open_socket(7070)
+            elif o == '-c':
+                subprocs.append(v)
+            elif o == '-v':
+                show_version = True
+            elif o == '-h':
+                show_help = True
+            elif o == '-a':
+                n = v.find('@')
+                if n > 0:
+                    p = v[:n].strip()
+                    c = v[n+1:].strip()
+                else:
+                    p = v.strip()
+                    c = None
+                if len(p) == 4:
+                    p = '0' + p
+                if not re.match(r'^[0-2]\d:[0-5]\d$', p):
+                    raise Exception(
+                          'Incorrect time format %s. Must be HH:MM.' % v)
+                alarms[p] = c
+            elif o == '-f':
+                skin_files.append(v)
+            elif o == '-w':
+                ignore_wm = False
+            elif o == '-d':
+                daemonize_app = True
+        skins = skin_base(skin_files)
+    except getopt.GetoptError, e:
+        print str(e)
+        return
+    except Exception, e:
+        print '%s: %s' % (str(e.__class__), str(e))
+        return
+    if show_version:
+        print ABOUT
+        return
+    if show_help:
+        print HELP
+        return
+    # daemonize
+    if daemonize_app:
+        daemonize()
+    # start application
+    r = window(alarms, skins, ignore_wm)
+    # this line will elect automatic child reaping. sure.
+    signal.signal(signal.SIGCHLD, signal.SIG_IGN)
+    os.putenv('PIXICLOCK', VERSION)
+    # start neworking if confugured
+    links = None
+    if sock or subprocs:
+        links = net_message(r, sock, subprocs)
+    # ok. main loop
+    try:
+        r.mainloop()
+    except Exception, e:
+        print '%s: %s' % (str(e.__class__), str(e))
+    # close all external links
+    # and try to kill all childs
+    if not links is None:
+        links.vanish_subprocs()
+        links.vanish_connections()
+
+
+if __name__ == '__main__':
+    main()
